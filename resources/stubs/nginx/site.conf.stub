@@ -1,0 +1,25 @@
+server {
+    listen 80;
+    {{ ssl_listens }}
+    server_name {{ server_names }};
+    root {{ root_path }}/{{ public_dir }};
+    index index.php index.html;
+
+    {{ redirect_block }}
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php/php{{ php_version }}-fpm-{{ site_slug }}.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
+    {{ ssl_block }}
+
+    access_log /var/log/nginx/{{ site_slug }}.access.log;
+    error_log /var/log/nginx/{{ site_slug }}.error.log;
+}
