@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Console\Scheduling\Schedule;
 use App\Models\{Site, Domain, Deployment};
 use App\Observers\{SiteObserver, DomainObserver, DeploymentObserver};
 
@@ -15,7 +16,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \App\Console\Commands\PruneReleases::class,
+            ]);
+        }
     }
 
     /**
@@ -32,6 +37,11 @@ class AppServiceProvider extends ServiceProvider
             $user = Auth::user();
             $view->with('authUser', $user);
             $view->with('authRole', $user?->role?->value);
+        });
+
+        // Schedule pruning daily
+        $this->app->afterResolving(Schedule::class, function (Schedule $schedule) {
+            $schedule->command('deploy:prune-releases')->daily();
         });
     }
 }

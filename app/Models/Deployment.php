@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $site_id
  * @property string $commit_hash
  * @property string $branch
+ * @property string|null $release_name
+ * @property string|null $release_path
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $started_at
  * @property \Illuminate\Support\Carbon|null $finished_at
@@ -24,7 +26,7 @@ class Deployment extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'site_id', 'commit_hash', 'branch', 'status', 'started_at', 'finished_at', 'log_path', 'user_id',
+        'site_id', 'commit_hash', 'branch', 'release_name', 'release_path', 'status', 'started_at', 'finished_at', 'log_path', 'user_id',
     ];
 
     protected $casts = [

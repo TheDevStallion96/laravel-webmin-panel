@@ -44,8 +44,25 @@ class DeploymentController extends Controller
     public function logs(Site $site, Deployment $deployment): View
     {
         if ($deployment->site_id !== $site->id) abort(404);
-        $contents = is_file($deployment->log_path) ? file_get_contents($deployment->log_path) : '';
-        return view('deploy.logs', compact('site','deployment','contents'));
+        $tail = (int) request()->query('tail', 0);
+        $ansi = (bool) request()->query('ansi', false);
+        $contents = '';
+        if (is_file($deployment->log_path)) {
+            if ($tail > 0) {
+                $contents = $this->tailFile($deployment->log_path, $tail);
+            } else {
+                $contents = file_get_contents($deployment->log_path);
+            }
+        }
+        $contents_html = $ansi ? ansi_to_html($contents) : e($contents);
+        return view('deploy.logs', [
+            'site' => $site,
+            'deployment' => $deployment,
+            'contents' => $contents,
+            'contents_html' => $contents_html,
+            'tail' => $tail,
+            'ansi' => $ansi,
+        ]);
     }
 
     public function rollback(Request $request, Site $site, Deployment $deployment)
@@ -78,5 +95,27 @@ class DeploymentController extends Controller
     {
         $name = basename($logPath, '.log');
         return $name; // timestamp used as release name
+    }
+
+    private function tailFile(string $path, int $lines): string
+    {
+        // Efficiently read last N lines
+        $f = fopen($path, 'r');
+        if (!$f) return '';
+        $buffer = '';
+        $pos = -1;
+        $lineCount = 0;
+        $stat = fstat($f);
+        $size = $stat['size'] ?? 0;
+        if ($size === 0) { fclose($f); return ''; }
+        while ($lineCount < $lines && -$pos < $size) {
+            fseek($f, $pos, SEEK_END);
+            $char = fgetc($f);
+            $buffer = $char.$buffer;
+            if ($char === "\n") $lineCount++;
+            $pos--;
+        }
+        fclose($f);
+        return $buffer;
     }
 }

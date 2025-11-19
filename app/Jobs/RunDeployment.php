@@ -68,6 +68,11 @@ class RunDeployment implements ShouldQueue
         $releasePath = $base.'/'.$timestamp;
         if (!is_dir($base)) @mkdir($base, 0755, true);
 
+        // Persist release identifiers early for future diffing/cleanup
+        $deployment->release_name = $timestamp;
+        $deployment->release_path = $releasePath;
+        $deployment->save();
+
         $logDir = storage_path('app/panel/deployments/'.$site->slug);
         if (!is_dir($logDir)) @mkdir($logDir, 0755, true);
         $logPath = $logDir.'/'.$timestamp.'.log';
