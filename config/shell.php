@@ -7,5 +7,10 @@ return [
         'systemctl',
         'php',
         'echo',
+        // Phase 5 database engines & tools
+        'mysql',
+        'mysqldump',
+        'psql',
+        'pg_dump',
     ],
 ];

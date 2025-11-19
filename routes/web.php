@@ -60,6 +60,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/sites/{site}/domains/{domain}/primary', [DomainsController::class, 'makePrimary'])->middleware('can:manage-site')->name('sites.domains.primary');
     Route::post('/sites/{site}/domains/{domain}/https', [DomainsController::class, 'toggleHttpsForced'])->middleware('can:manage-site')->name('sites.domains.https');
     Route::post('/sites/{site}/certificates/provision', [CertificatesController::class, 'provisionLetsEncrypt'])->middleware('can:manage-site')->name('sites.certificates.provision');
+
+    // Deployments Phase 7
+    Route::get('/sites/{site}/deploy/settings', [\App\Http\Controllers\DeploymentController::class, 'settings'])->middleware('can:manage-site')->name('sites.deploy.settings');
+    Route::post('/sites/{site}/deploy/run', [\App\Http\Controllers\DeploymentController::class, 'run'])->middleware('can:manage-site')->name('sites.deploy.run');
+    Route::get('/sites/{site}/deploy/history', [\App\Http\Controllers\DeploymentController::class, 'history'])->middleware('can:view-site')->name('sites.deploy.history');
+    Route::get('/sites/{site}/deploy/logs/{deployment}', [\App\Http\Controllers\DeploymentController::class, 'logs'])->middleware('can:view-site')->name('sites.deploy.logs');
+    Route::post('/sites/{site}/deploy/rollback/{deployment}', [\App\Http\Controllers\DeploymentController::class, 'rollback'])->middleware('can:manage-site')->name('sites.deploy.rollback');
 });
 
 require __DIR__.'/auth.php';
